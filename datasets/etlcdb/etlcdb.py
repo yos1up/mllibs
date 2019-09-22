@@ -5,8 +5,8 @@ import zipfile
 import numpy as np
 from chainer import datasets
 
-
 here = os.path.dirname(os.path.abspath(__file__))
+
 
 def get_etl4c(ndim=3):
     """
