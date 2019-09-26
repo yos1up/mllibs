@@ -12,7 +12,7 @@ from PIL import Image
 
 here = os.path.dirname(os.path.abspath(__file__))
 
-def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None):
+def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None, get_extra=False):
     """
     SVHN データセット（多数桁のままの形式）を取得します．
     --------
@@ -23,8 +23,11 @@ def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None):
             画像をリサイズする「横幅」と「縦幅」．すべてのデータの画像は，このサイズにリサイズされます．
         num (int or None, default None):
             最初の num データ分だけ読み込みを行うオプション，
+        get_extra (bool, default False):
+            extra data も取得するかどうか． 
     Returns:
-        data_train, data_test:
+        data_train, data_test  (get_extra==False の場合)
+        data_train, data_test, data_extra  (get_extra==True の場合)
             それぞれ訓練データとテストデータが返ります．各々のフォーマットは以下参照．
             - fmt == 'dict' の場合
                 {
@@ -61,12 +64,24 @@ def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None):
         with tarfile.open(str(data_dir / "test.tar.gz")) as t:
             t.extractall(str(data_dir))
         print("Done.")
-
+       
+    if get_extra:
+        if not os.path.exists(str(data_dir / "extra")):
+            if not os.path.exists(str(data_dir / "extra.tar.gz")):
+                print("Downloading extra.tar.gz...", end="")
+                request.urlretrieve("http://ufldl.stanford.edu/housenumbers/extra.tar.gz", str(data_dir / "extra.tar.gz"))
+                print("Done.")
+            print("Extracting extra.tar.gz...", end="")
+            with tarfile.open(str(data_dir / "extra.tar.gz")) as t:
+                t.extractall(str(data_dir))
+            print("Done.")
+    
     data_train = load_svhn(str(data_dir / "train"), fmt=fmt, image_size=image_size, num=num)
     data_test = load_svhn(str(data_dir / "test"), fmt=fmt, image_size=image_size, num=num)
+    if get_extra:
+        data_extra = load_svhn(str(data_dir / "extra"), fmt=fmt, image_size=image_size, num=num)
+        return data_train, data_test, data_extra
     return data_train, data_test
-
-
 
 
 def get_box_data(index, hdf5_data):
