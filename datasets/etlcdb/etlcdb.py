@@ -4,6 +4,21 @@ from urllib import request
 import zipfile
 import numpy as np
 from chainer import datasets
+try:
+    from urle import ETL_URL
+except ImportError:
+    ETL_URL = None
+
+
+def _CHECK_ETL_URL():
+    if ETL_URL is None:
+        raise RuntimeError("""
+ETL_URL is not correctly set up. Copy `url_sample.py` to `url.py` and edit the url for ETL datasets.
+You can get to know the url by sending a request from:
+    http://etlcdb.db.aist.go.jp/obtaining-etl-character-database
+""")
+
+
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,12 +34,13 @@ def get_etl4c(ndim=3):
     Returns:
         (chainer.datasets.TupleDataset)
     """
+    _CHECK_ETL_URL()
     assert(1 <= ndim <= 3)
     data_dir = Path(here) / "data"
     if not os.path.exists(str(data_dir / "ETL4/ETL4C")):
         if not os.path.exists(str(data_dir / "ETL4.zip")):
             print("Downloading ETL4.zip...", end="")
-            request.urlretrieve("http://etlcdb.db.aist.go.jp/etlcdb/data/ETL4.zip", str(data_dir / "ETL4.zip"))
+            request.urlretrieve(ETL_URL + "ETL4.zip", str(data_dir / "ETL4.zip"))
             print("Done.")
         print("Extracting ETL4C...", end="")
         with zipfile.ZipFile(str(data_dir / "ETL4.zip")) as z:
@@ -78,48 +94,20 @@ def get_etl9g(ndim=3):
     Returns:
         (chainer.datasets.TupleDataset)
     """
-    raise NotImplementedError
+    raise NotImplementedError  # まだ実装中です・・・
+    _CHECK_ETL_URL()
     assert(1 <= ndim <= 3)
     data_dir = Path(here) / "data"
     data_files = [data_dir / "ETL9G/ETL9G_{:02d}".format(i) for i in range(1, 51)]
     if not _path_exists(data_files):
         if not os.path.exists(str(data_dir / "ETL9G.zip")):
             print("Downloading ETL9G.zip...", end="")
-            request.urlretrieve("http://etlcdb.db.aist.go.jp/etlcdb/data/ETL9G.zip", str(data_dir / "ETL9G.zip"))
+            request.urlretrieve(ETL_URL + "ETL9G.zip", str(data_dir / "ETL9G.zip"))
             print("Done.")
         print("Extracting ETL9G...", end="")
         with zipfile.ZipFile(str(data_dir / "ETL9G.zip")) as z:
             z.extractall(str(data_dir))
         print("Done.")
-
-    """
-    img_offset = 288
-    img_h = 74
-    img_w = 72
-    img_size = img_h * img_w // 2
-    chunksize = img_offset + img_size
-    xs, ys = [], []
-    with open(str(data_dir / "ETL4/ETL4C"), "rb") as f:
-        while True:
-            s = f.read(chunksize)
-            if s is None or len(s) < chunksize:
-                break
-            img = s[img_offset:img_offset + img_size]
-            xs.append(np.array([[(b >> 4) & 15, b & 15] for b in img]).flatten().astype(np.float32)/16)
-            decoded = _chr_jisx0201(s[9])
-            ys.append(decoded)
-    xs, ys = np.array(xs, dtype=np.float32), np.array(ys, dtype=str)
-
-    if ndim == 2:
-        xs = xs.reshape(-1, img_h, img_w)
-    elif ndim == 3:
-        xs = xs.reshape(-1, 1, img_h, img_w)
-
-    label_to_id = {v: i for i, v in enumerate(get_etl4c_labels())}
-    ys = np.array([label_to_id[y] for y in ys], dtype=np.int32)
-
-    return datasets.TupleDataset(xs, ys)
-    """
 
 
 def _path_exists(paths):
