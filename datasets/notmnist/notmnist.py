@@ -68,7 +68,7 @@ def get_notmnist(section="small"):
     here = Path(os.path.dirname(os.path.abspath(__file__)))
 
     if os.path.exists(str(here / "data/notMNIST_{}.npz".format(section))):
-        _ = np.load("./data/notMNIST_{}.npz".format(section))
+        _ = np.load(str(here / "data/notMNIST_{}.npz".format(section)))
         Xs, ys = _['Xs'], _['ys']
     else:
         download_file(
@@ -77,7 +77,7 @@ def get_notmnist(section="small"):
         )
         extract_tar_gz(str(here / "data/notMNIST_{}.tar.gz".format(section)))
         Xs, ys = load_notmnist(str(here / "data/notMNIST_{}/".format(section)))
-        np.savez("./data/notMNIST_{}.npz".format(section), Xs=Xs, ys=ys)
+        np.savez(str(here / "data/notMNIST_{}.npz".format(section)), Xs=Xs, ys=ys)
 
     return Xs, ys
 
