@@ -53,7 +53,26 @@ def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None, get_extra=False)
             print("Done.")
         print("Extracting train.tar.gz...", end="")
         with tarfile.open(str(data_dir / "train.tar.gz")) as t:
-            t.extractall(str(data_dir))
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(t, str(data_dir))
         print("Done.")
     if not os.path.exists(str(data_dir / "test")):
         if not os.path.exists(str(data_dir / "test.tar.gz")):
@@ -62,7 +81,26 @@ def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None, get_extra=False)
             print("Done.")
         print("Extracting test.tar.gz...", end="")
         with tarfile.open(str(data_dir / "test.tar.gz")) as t:
-            t.extractall(str(data_dir))
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(t, str(data_dir))
         print("Done.")
        
     if get_extra:
@@ -73,7 +111,26 @@ def get_svhn(fmt='TupleDataset', image_size=[70, 30], num=None, get_extra=False)
                 print("Done.")
             print("Extracting extra.tar.gz...", end="")
             with tarfile.open(str(data_dir / "extra.tar.gz")) as t:
-                t.extractall(str(data_dir))
+                def is_within_directory(directory, target):
+                    
+                    abs_directory = os.path.abspath(directory)
+                    abs_target = os.path.abspath(target)
+                
+                    prefix = os.path.commonprefix([abs_directory, abs_target])
+                    
+                    return prefix == abs_directory
+                
+                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                
+                    for member in tar.getmembers():
+                        member_path = os.path.join(path, member.name)
+                        if not is_within_directory(path, member_path):
+                            raise Exception("Attempted Path Traversal in Tar File")
+                
+                    tar.extractall(path, members, numeric_owner=numeric_owner) 
+                    
+                
+                safe_extract(t, str(data_dir))
             print("Done.")
     
     data_train = load_svhn(str(data_dir / "train"), fmt=fmt, image_size=image_size, num=num)
